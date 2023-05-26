@@ -16,8 +16,6 @@ inputs:
     description: 'Multiline string containing the outputs you want to get'
     required: true
 
-outputs:
-
 runs:
   using: 'node16'
   main: 'dist/index.js'
