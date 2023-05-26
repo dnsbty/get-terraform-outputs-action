@@ -1,0 +1,23 @@
+name: 'Get Terraform outputs'
+author: 'Dennis Beatty'
+description: 'Gets outputs from Terraform Cloud and outputs them'
+branding:
+  icon: 'download-cloud'
+  color: 'purple'
+
+inputs:
+  api-token:
+    description: 'The Terraform Cloud API token'
+    required: true
+  workspace-id:
+    description: 'The name of the Terraform Cloud workspace'
+    required: true
+  outputs:
+    description: 'Multiline string containing the outputs you want to get'
+    required: true
+
+outputs:
+
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
