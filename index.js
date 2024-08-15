@@ -1,6 +1,8 @@
 const core = require('@actions/core');
 const axios = require('axios');
 
+const PAGE_SIZE = 100;
+
 async function getCurrentStateVersion(client, workspaceId) {
   try {
     const { data } = await client.get(`/workspaces/${workspaceId}/current-state-version`);
@@ -15,20 +17,34 @@ async function getCurrentStateVersion(client, workspaceId) {
 }
 
 async function getOutputs(client, stateVersionId) {
+  const tfOutputs = await getOutputsPages(client, stateVersionId, 1);
+
+  return tfOutputs.reduce((outputs, { attributes }) => {
+    const { name, sensitive, value } = attributes;
+    if (sensitive) core.setSecret(value);
+    outputs[name] = value;
+    return outputs;
+  }, {});
+}
+
+async function getOutputsPages(client, stateVersionId, pageNumber) {
   try {
-    const { data } = await client.get(`/state-versions/${stateVersionId}/outputs`);
+    const { data } = await client.get(`/state-versions/${stateVersionId}/outputs`, {
+      params: { 'page[number]': pageNumber, 'page[size]': PAGE_SIZE }
+    });
 
-    const tfOutputs = data?.data;
-    if (!tfOutputs) throw new Error('No outputs were found.');
+    let outputs = data?.data;
+    if (!outputs) throw new Error('No outputs were found.');
 
-    return tfOutputs.reduce((outputs, { attributes }) => {
-      const { name, sensitive, value } = attributes;
-      if (sensitive) core.setSecret(value);
-      outputs[name] = value;
-      return outputs;
-    }, {});
+    const totalPages = data.meta?.pagination['total-pages'];
+    if (totalPages > pageNumber) {
+      const rest = await getOutputsPages(client, stateVersionId, pageNumber + 1);
+      outputs = outputs.concat(rest);
+    }
+
+    return outputs;
   } catch (err) {
-    throw new Error(`Failed to get the outputs: ${err.message}`);
+    throw new Error(`Failed to get the outputs for page ${pageNumber}: ${err.message}`);
   }
 }
 
