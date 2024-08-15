@@ -52,7 +52,7 @@ async function setOutputs(outputs, desiredOutputs) {
   desiredOutputs.forEach((outputName) => {
     const value = outputs[outputName];
     if (value === undefined) {
-      core.error(`No Terraform output was found with the name ${outputName}`);
+      core.error(`No Terraform output was found with the name ${outputName}. The following outputs were found: ${Object.keys(outputs).join(', ')}`);
     }
 
     core.setOutput(outputName, value);
