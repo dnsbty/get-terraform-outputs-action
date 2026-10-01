@@ -28,7 +28,7 @@ all other outputs can be used as normal.
 ## Example usage
 
 ```yaml
-uses: dnsbty/get-terraform-outputs-action@v1
+uses: dnsbty/get-terraform-outputs-action@v3
 with:
   api-token: ${{ secrets.TF_API_TOKEN }}
   workspace-id: ws-MB8LQIK8Cxksuvao
